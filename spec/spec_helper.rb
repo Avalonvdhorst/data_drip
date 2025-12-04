@@ -2,13 +2,18 @@
 
 require "data_drip"
 
-ENV["RAILS_ENV"] ||= "test"
+original_dir = Dir.pwd
+test_app_dir = File.join(__dir__, "test_app")
+Dir.chdir(test_app_dir)
 
-require "rails"
-require "test_app/config/environment"
+ENV["RAILS_ENV"] = "test"
+require File.join(test_app_dir, "config", "environment")
+
 require "rspec/rails"
 
 ActiveRecord::Migration.maintain_test_schema!
+
+Dir.chdir(original_dir)
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
