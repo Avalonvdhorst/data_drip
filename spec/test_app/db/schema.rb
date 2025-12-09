@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_20_142547) do
+ActiveRecord::Schema[7.0].define(version: 2025_11_20_142547) do
   create_table "data_drip_backfill_run_batches", force: :cascade do |t|
     t.bigint "backfill_run_id", null: false
     t.integer "status", default: 0, null: false
@@ -20,7 +20,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_20_142547) do
     t.bigint "finish_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index [ "backfill_run_id" ], name: "index_data_drip_backfill_run_batches_on_backfill_run_id"
+    t.index [ "backfill_run_id" ],
+            name: "index_data_drip_backfill_run_batches_on_backfill_run_id"
     t.index [ "status" ], name: "index_data_drip_backfill_run_batches_on_status"
   end
 
@@ -55,5 +56,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_20_142547) do
     t.datetime "updated_at", null: false
   end
 
-  add_foreign_key "data_drip_backfill_run_batches", "data_drip_backfill_runs", column: "backfill_run_id"
+  add_foreign_key "data_drip_backfill_run_batches",
+                  "data_drip_backfill_runs",
+                  column: "backfill_run_id"
 end

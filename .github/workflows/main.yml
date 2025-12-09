@@ -11,7 +11,7 @@ jobs:
       - name: Setup Ruby and install gems
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.3.0
+          ruby-version: 3.4
           bundler-cache: true
       - name: Run rubocop
         run: |
@@ -21,10 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby-version: [3.3.0]
+        gemfile:
+          - Gemfile
+          - gemfiles/Gemfile-Rails-7-2
+          - gemfiles/Gemfile-Rails-8-0
+          - gemfiles/Gemfile-Rails-8-1
+          - gemfiles/Gemfile-Rails-main
+        ruby-version: [3.3, 3.4]
         database: [sqlite]
     env:
       TARGET_DB: ${{ matrix.database }}
+      BUNDLE_GEMFILE: ${{ matrix.gemfile }}
       CI: true
     steps:
       - name: Checkout code
@@ -34,13 +41,5 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
-      - name: Install test app gems
-        run: |
-          cd spec/test_app
-          bundle install
-      - name: Setup test database
-        run: |
-          cd spec/test_app
-          bundle exec rails db:create db:migrate
       - name: Run tests
-        run: bundle exec rspec
+        run: bundle exec rake
