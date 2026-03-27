@@ -1,4 +1,4 @@
-class CreateDataDripBackfillRunBatches < ActiveRecord::Migration[8.1]
+class CreateDataDripBackfillRunBatches < ActiveRecord::Migration[7.0]
   def change
     create_table :data_drip_backfill_run_batches, id: :bigint do |t|
       t.references :backfill_run, null: false, foreign_key: { to_table: :data_drip_backfill_runs }, type: :bigint

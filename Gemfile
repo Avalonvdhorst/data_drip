@@ -14,6 +14,8 @@ gem "rake", "~> 13.0"
 gem "rails"
 gem "sqlite3"
 
+gem "puma"
+
 gem "rspec", "~> 3.0"
 
 gem "rspec-rails", ">= 8.0"

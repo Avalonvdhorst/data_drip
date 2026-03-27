@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_27_081549) do
+ActiveRecord::Schema[7.0].define(version: 2026_03_27_081549) do
   create_table "data_drip_backfill_run_batches", force: :cascade do |t|
     t.bigint "backfill_run_id", null: false
     t.integer "batch_size", default: 100, null: false
@@ -20,8 +20,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_081549) do
     t.bigint "start_id", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
-    t.index ["backfill_run_id"], name: "index_data_drip_backfill_run_batches_on_backfill_run_id"
-    t.index ["status"], name: "index_data_drip_backfill_run_batches_on_status"
+    t.index [ "backfill_run_id" ], name: "index_data_drip_backfill_run_batches_on_backfill_run_id"
+    t.index [ "status" ], name: "index_data_drip_backfill_run_batches_on_status"
   end
 
   create_table "data_drip_backfill_runs", force: :cascade do |t|
@@ -37,7 +37,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_081549) do
     t.integer "status", default: 0, null: false
     t.integer "total_count"
     t.datetime "updated_at", null: false
-    t.index ["status"], name: "index_data_drip_backfill_runs_on_status"
+    t.index [ "status" ], name: "index_data_drip_backfill_runs_on_status"
   end
 
   create_table "employees", force: :cascade do |t|
