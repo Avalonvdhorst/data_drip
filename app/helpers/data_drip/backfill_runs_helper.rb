@@ -2,6 +2,8 @@
 
 module DataDrip
   module BackfillRunsHelper
+    include ActionView::Helpers::NumberHelper
+
     def status_tag(status)
       tag_styles =
         case status.to_s
@@ -33,6 +35,29 @@ module DataDrip
       local_time = datetime.in_time_zone(user_timezone)
 
       local_time.strftime("%b %d, %H:%M")
+    end
+
+    def format_insight_duration(seconds)
+      return "—" if seconds.nil? || !seconds.finite? || seconds.negative?
+
+      secs = seconds.to_f
+      if secs < 60
+        "#{secs.round(1)} s"
+      elsif secs < 3600
+        mins = (secs / 60).floor
+        rem = (secs % 60).round
+        "#{mins}m #{rem}s"
+      else
+        hours = (secs / 3600).floor
+        mins = ((secs % 3600) / 60).floor
+        "#{hours}h #{mins}m"
+      end
+    end
+
+    def format_insight_elements_per_second(rate)
+      return "—" if rate.nil? || !rate.finite? || rate.negative?
+
+      "#{number_with_delimiter(rate.round(2))} /s"
     end
 
     def backfill_option_inputs(backfill_run)

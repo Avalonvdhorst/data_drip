@@ -147,6 +147,71 @@ RSpec.describe DataDrip::BackfillRun, type: :model do
     end
   end
 
+  describe "insight metrics" do
+    include ActiveSupport::Testing::TimeHelpers
+
+    let(:backfill_run) do
+      run =
+        DataDrip::BackfillRun.new(
+          backfill_class_name: "AddRoleToEmployee",
+          batch_size: 10,
+          start_at: 1.hour.from_now,
+          backfiller: backfiller,
+          options: {
+            age: 25
+          },
+          processed_count: 100,
+          status: :completed
+        )
+      run.save!(validate: false)
+      run
+    end
+
+    it "returns nil when there are no batches" do
+      expect(backfill_run.insight_run_duration_seconds).to be_nil
+      expect(backfill_run.insight_average_batch_duration_seconds).to be_nil
+      expect(backfill_run.insight_elements_per_second).to be_nil
+    end
+
+    context "with batches" do
+      let(:t0) { Time.zone.parse("2025-06-01 10:00:00") }
+      let(:t1) { Time.zone.parse("2025-06-01 10:00:30") }
+
+      before do
+        batch =
+          DataDrip::BackfillRunBatch.create!(
+            backfill_run: backfill_run,
+            batch_size: 10,
+            start_id: employee1.id,
+            finish_id: employee2.id,
+            status: :completed
+          )
+        batch.update_columns(created_at: t0, updated_at: t1)
+      end
+
+      it "computes run duration from batch timestamps" do
+        expect(backfill_run.insight_run_duration_seconds).to eq(30.0)
+      end
+
+      it "computes average time per batch" do
+        expect(backfill_run.insight_average_batch_duration_seconds).to eq(30.0)
+      end
+
+      it "computes elements per second from processed_count" do
+        expect(backfill_run.insight_elements_per_second).to be_within(0.001).of(
+          100 / 30.0
+        )
+      end
+
+      it "uses Time.current as end while running" do
+        backfill_run.update_column(:status, 2)
+        travel_to Time.zone.parse("2025-06-01 11:00:00") do
+          expect(backfill_run.insight_run_duration_seconds).to eq(3600.0)
+        end
+      end
+    end
+  end
+
   describe "status enum" do
     it "has the correct status values" do
       backfill_run = DataDrip::BackfillRun.allocate
