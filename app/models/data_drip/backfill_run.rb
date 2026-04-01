@@ -41,6 +41,34 @@ module DataDrip
         DataDrip.all.find { |klass| klass.name == backfill_class_name }
     end
 
+    def insight_run_duration_seconds
+      time_window = insight_processing_time_window
+      return nil unless time_window
+
+      elapsed_seconds = (time_window.last - time_window.first).to_f
+      elapsed_seconds.positive? ? elapsed_seconds : nil
+    end
+
+    def insight_average_batch_duration_seconds
+      run_duration_seconds = insight_run_duration_seconds
+      return nil unless run_duration_seconds&.positive?
+
+      batch_count = batches.count
+      return nil if batch_count.zero?
+
+      run_duration_seconds / batch_count
+    end
+
+    def insight_elements_per_second
+      run_duration_seconds = insight_run_duration_seconds
+      return nil unless run_duration_seconds&.positive?
+
+      processed_elements_count = processed_count.to_i
+      return nil if processed_elements_count.zero?
+
+      processed_elements_count / run_duration_seconds
+    end
+
     def enqueue
       return unless pending?
 
@@ -49,6 +77,22 @@ module DataDrip
     end
 
     private
+
+    def insight_processing_time_window
+      return nil unless batches.exists?
+
+      start_time = batches.minimum(:created_at)
+      return nil unless start_time
+
+      end_time =
+        if running?
+          Time.current
+        else
+          batches.maximum(:updated_at)
+        end
+
+      [ start_time, end_time ]
+    end
 
     def run_hooks
       return unless status_previously_changed?
