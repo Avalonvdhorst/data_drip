@@ -1,4 +1,5 @@
-<% @batches.each do |batch| %>
+<% batches = local_assigns[:batches] || @batches || backfill_run.batches.order(created_at: :desc).limit(20) %>
+<% batches.each do |batch| %>
   <tr class="border-b border-gray-100 last:border-b-0">
     <td class="py-3 px-4 text-gray-700 align-middle"><%= status_tag(batch.status) %></td>
     <td class="py-3 px-4 text-gray-700 align-middle"><%= batch.batch_size %></td>

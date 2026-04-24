@@ -6,3 +6,4 @@ pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin_all_from DataDrip::Engine.root.join("app/javascript/data_drip/controllers"), under: "controllers",
                                                                                  to: "data_drip/controllers"
+pin "data_drip/backfill_run_updates", to: "data_drip/backfill_run_updates.js"

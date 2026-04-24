@@ -1,5 +1,5 @@
 import "@hotwired/turbo-rails"
-import "controllers"
+import "data_drip/backfill_run_updates"
 
 (function() {
   'use strict';
