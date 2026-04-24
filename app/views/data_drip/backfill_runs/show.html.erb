@@ -1,6 +1,6 @@
-<div class="min-h-screen flex bg-white" 
-     data-controller="backfill-run-updates"
-     data-backfill-run-updates-backfill-run-id-value="<%= @backfill_run.id %>">
+<div class="min-h-screen flex bg-white"
+     data-backfill-run-updates
+     data-backfill-run-id="<%= @backfill_run.id %>">
   <div
     class="
       hidden md:flex flex-col m-2 justify-between w-72 bg-gradient-to-b from-slate-700
@@ -33,40 +33,20 @@
             <p>by
               <%= @backfill_run.backfiller_name %></p>
           </div>
-          <div class="flex-1 flex justify-end items-center">
-            <% if @backfill_run.running? %>
-              <%= button_to "STOP",
-              stop_backfill_run_path(@backfill_run),
-              method: :post,
-              data: {
-                confirm: "Are you sure you want to stop this backfill run?",
-                disable_with: "stopping",
-              },
-              class: "px-4 py-2 text-white rounded font-bold shadow",
-              style: "background-color: #ef4444; border: 1px solid #f97316;" %>
-            <% elsif @backfill_run.enqueued? %>
-              <%= button_to "DELETE",
-              backfill_run_path(@backfill_run),
-              method: :delete,
-              data: {
-                confirm: "Are you sure you want to delete?",
-                disable_with: "deleting",
-              },
-              class: "px-4 py-2 text-white rounded font-bold shadow",
-              style: "background-color: #ef4444; border: 1px solid #dc2626;" %>
-            <% end %>
+          <div class="flex-1 flex justify-end items-center" data-target="actionButton">
+            <%= render 'action_button', backfill_run: @backfill_run %>
           </div>
         </div>
         <div class="flex flex-row gap-4 mt-4">
           <div class="flex-1 flex flex-col gap-1">
             <p class="text-sm font-light text-left mt-0.5">
               <span class="font-semibold">Status:</span>
-              <span data-backfill-run-updates-target="status">
+              <span data-target="status">
                 <%= status_tag(@backfill_run.status) %>
               </span>
             </p>
             <p class="text-sm font-light text-left mt-0.5"><span class="font-semibold">Processed:</span>
-              <span data-backfill-run-updates-target="processedCount">
+              <span data-target="processedCount">
                 <%= @backfill_run.processed_count %>
               </span>
               <%= if @backfill_run.amount_of_elements
@@ -75,13 +55,13 @@
                 ""
               end %></p>
             <p class="text-sm font-light text-left mt-0.5"><span class="font-semibold">Total:</span>
-              <span data-backfill-run-updates-target="totalCount">
+              <span data-target="totalCount">
                 <%= @backfill_run.total_count %>
               </span>
             </p>
             <% if @backfill_run.options.present? %>
               <p class="text-sm font-light text-left mt-0.5"><span class="font-semibold">Options:</span>
-                <span data-backfill-run-updates-target="totalCount">
+                <span data-target="totalCount">
                   <% @backfill_run.options.each do |key, value| %>
                     <% next if value.blank? %>
                     <%= "#{key} = #{value}" %>
@@ -106,19 +86,36 @@
           <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
             Insights
           </h2>
-          <div class="flex flex-col gap-1">
-            <p class="text-sm font-light text-left mt-0.5">
-              <span class="font-semibold">Total run time:</span>
-              <%= format_insight_duration(@backfill_run.insight_run_duration_seconds) %>
-            </p>
-            <p class="text-sm font-light text-left mt-0.5">
-              <span class="font-semibold">Average time per batch:</span>
-              <%= format_insight_duration(@backfill_run.insight_average_batch_duration_seconds) %>
-            </p>
-            <p class="text-sm font-light text-left mt-0.5">
-              <span class="font-semibold">Elements per second:</span>
-              <%= format_insight_elements_per_second(@backfill_run.insight_elements_per_second) %>
-            </p>
+          <div class="flex flex-row gap-6">
+            <div class="flex-1 flex flex-col gap-1">
+              <p class="text-sm font-light text-left mt-0.5">
+                <span class="font-semibold">Total run time:</span>
+                <span data-target="runDuration">
+                  <%= format_insight_duration(@backfill_run.insight_run_duration_seconds) %>
+                </span>
+              </p>
+              <p class="text-sm font-light text-left mt-0.5">
+                <span class="font-semibold">Average time per batch:</span>
+                <span data-target="averageBatchDuration">
+                  <%= format_insight_duration(@backfill_run.insight_average_batch_duration_seconds) %>
+                </span>
+              </p>
+              <p class="text-sm font-light text-left mt-0.5">
+                <span class="font-semibold">Elements per second:</span>
+                <span data-target="elementsPerSecond">
+                  <%= format_insight_elements_per_second(@backfill_run.insight_elements_per_second) %>
+                </span>
+              </p>
+            </div>
+            <div class="flex-1 flex flex-col justify-center">
+              <p class="text-sm font-semibold text-left mb-2">Progress</p>
+              <progress
+                data-target="progressBar"
+                value="<%= @backfill_run.processed_count %>"
+                max="<%= @backfill_run.total_count %>"
+                class="w-full h-6 progress-bar">
+              </progress>
+            </div>
           </div>
         </div>
       </div>
@@ -148,8 +145,8 @@
                 <th class="py-2 px-4 text-gray-400 font-semibold text-sm">ERRORS</th>
               </tr>
             </thead>
-            <tbody data-backfill-run-updates-target="batchesTable">
-              <%= render 'batches_table', backfill_run: @backfill_run %>
+            <tbody data-target="batchesTable">
+              <%= render 'batches_table', backfill_run: @backfill_run, batches: @batches %>
             </tbody>
           </table>
         </div>
