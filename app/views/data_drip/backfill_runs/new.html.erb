@@ -1,65 +1,151 @@
+<div class="ap-shell">
 
-<div class="min-h-screen flex items-center justify-center m-8 bg-gradient-to-r from-slate-700 to-gray-900">
-  <div class="w-full max-w-lg">
-    <%= form_with model: @run, url: backfill_runs_path, local: true, html: { class: "bg-white p-10 md:p-14 rounded-lg", "data-turbo": "false" } do |f| %>
-      <h1 class="text-4xl md:text-5xl font-semibold text-center mb-10 text-gray-700">New Backfill Run</h1>
-      <% if @run.errors.any? %>
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-          <h4 class="font-bold mb-2">There were errors:</h4>
-          <ul class="list-disc list-inside">
-            <% @run.errors.full_messages.each do |msg| %>
-              <li><%= msg %></li>
-            <% end %>
-          </ul>
+  <%# ── Sidebar ── %>
+  <aside class="ap-sidebar">
+    <%= link_to backfill_runs_path, class: "ap-logo-wrap" do %>
+      <div class="ap-logo-icon">
+        <svg viewBox="0 0 56 38" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="dd-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="10%" stop-color="#f72585"/>
+              <stop offset="50%" stop-color="#b5179e"/>
+              <stop offset="90%" stop-color="#7209b7"/>
+            </linearGradient>
+          </defs>
+          <path d="M14 0 C14 0 26 16 26 22 C26 29 20.6 34 14 34 C7.4 34 2 29 2 22 C2 16 14 0 14 0Z" fill="url(#dd-grad)" opacity="1"/>
+          <path d="M32 6 C32 6 41 18 41 24 C41 29.5 37 33.5 32 33.5 C27 33.5 23 29.5 23 24 C23 18 32 6 32 6Z" fill="url(#dd-grad)" opacity="0.65"/>
+          <path d="M47 14 C47 14 53 22 53 26 C53 29.8 50.3 33 47 33 C43.7 33 41 29.8 41 26 C41 22 47 14 47 14Z" fill="url(#dd-grad)" opacity="0.35"/>
+        </svg>
+      </div>
+      <span class="ap-logo-text">data<span class="ap-logo-drip">drip</span></span>
+    <% end %>
+
+    <div class="ap-dark-toggle-area">
+      <span class="ap-toggle-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        Dark mode
+      </span>
+      <button class="ap-toggle-btn" id="dark-toggle" role="switch" aria-label="Toggle dark mode">
+        <div class="ap-toggle-track" id="ap-toggle-track">
+          <div class="ap-toggle-thumb"></div>
         </div>
+      </button>
+    </div>
+
+    <nav class="ap-nav">
+      <%= link_to backfill_runs_path, class: "ap-nav-item" do %>
+        <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 8v5a.5.5 0 0 0 .5.5h3.5a.5.5 0 0 0 .5-.5v-3h4v3a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5V8a.5.5 0 0 0-.146-.354L8.354 1.146z"/>
+        </svg>
+        Backfill Runs
+      <% end %>
+      <%= link_to new_backfill_run_path, class: "ap-nav-item ap-nav-active" do %>
+        <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+        </svg>
+        New Run
+      <% end %>
+    </nav>
+
+    <div class="ap-sidebar-user">
+      <div class="ap-user-avatar">
+        <%= find_current_backfiller.send(DataDrip.backfiller_name_attribute).to_s.first(2).upcase %>
+      </div>
+      <span class="ap-user-name"><%= find_current_backfiller.send(DataDrip.backfiller_name_attribute) %></span>
+    </div>
+  </aside>
+
+  <%# ── Main ── %>
+  <main class="ap-main">
+    <div class="ap-content" style="max-width:100%;">
+
+      <%# Flash messages %>
+      <% flash.each do |key, value| %>
+        <div class="<%= key == 'notice' ? 'ap-flash-notice' : 'ap-flash-alert' %>"><%= value %></div>
       <% end %>
 
-      <div class="mb-6">
-        <%= f.label :backfill_class_name, "BACKFILL CLASS", class: "block text-gray-500 font-semibold mb-2" %>
-        <div class="relative">
-          <%= f.select :backfill_class_name, backfill_class_names, {}, class: "block w-full mt-1 rounded border border-gray-200 focus:ring focus:ring-blue-200 focus:border-blue-400 px-3 py-2 appearance-none pr-10" %>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+      <div class="ap-page-header">
+        <div class="ap-breadcrumb">
+          <%= link_to "Backfill Runs", backfill_runs_path %>
+          <span>›</span>
+          <span>New Run</span>
+        </div>
+        <h1 class="ap-page-title">New Backfill Run</h1>
+        <p class="ap-page-subtitle">Configure and schedule a new data backfill</p>
+      </div>
+
+      <div class="ap-form-card" style="max-width:660px;margin:0 auto;">
+        <div class="ap-form-bar"></div>
+        <div class="ap-form-body">
+
+          <% if @run.errors.any? %>
+            <div class="ap-error-box">
+              <div class="ap-error-title">Please fix the following errors:</div>
+              <ul>
+                <% @run.errors.full_messages.each do |msg| %>
+                  <li><%= msg %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <%= form_with model: @run, url: backfill_runs_path, local: true, html: { "data-turbo": "false" } do |f| %>
+
+            <div class="ap-field">
+              <%= f.label :backfill_class_name, "Backfill Class", class: "ap-field-label" %>
+              <div class="ap-select-wrap">
+                <%= f.select :backfill_class_name, backfill_class_names, {}, class: "ap-field-select" %>
+              </div>
+            </div>
+
+            <div class="ap-field">
+              <%= f.label :batch_size, "Batch Size", class: "ap-field-label" %>
+              <%= f.number_field :batch_size, class: "ap-field-input", min: 1 %>
+            </div>
+
+            <div class="ap-field">
+              <%= f.label :amount_of_elements, "Maximum Amount of Elements", class: "ap-field-label" %>
+              <%= f.number_field :amount_of_elements, class: "ap-field-input", min: 0, step: 10 %>
+            </div>
+
+            <div id="backfill-options-container"></div>
+
+            <div class="ap-field">
+              <%= f.label :start_at, "Run Should Start At", class: "ap-field-label" %>
+              <%= f.datetime_field :start_at, value: "", class: "ap-field-input" %>
+            </div>
+
+            <%= hidden_field_tag :user_timezone, "", id: "user_timezone" %>
+
+            <div style="margin-top:24px;">
+              <%= f.submit "Create Backfill Run",
+                  id: "submit-btn",
+                  class: "ap-btn",
+                  style: "width:100%;justify-content:center;padding:14px;font-size:15px;" %>
+            </div>
+
+          <% end %>
         </div>
       </div>
 
-      <div class="mb-6">
-        <%= f.label :batch_size, "BATCH SIZE", class: "block text-gray-500 font-semibold mb-2" %>
-        <%= f.number_field :batch_size, class: "block w-full mt-1 rounded border border-gray-200  focus:ring focus:ring-blue-200 focus:border-blue-400 px-3 py-2", min: 1 %>
-      </div>
+    </div>
+  </main>
 
-      <div class="mb-6">
-        <%= f.label :amount_of_elements, "MAXIMUM AMOUNT OF ELEMENTS", class: "block text-gray-500 font-semibold mb-2" %>
-        <%= f.number_field :amount_of_elements, class: "block w-full mt-1 rounded border border-gray-200  focus:ring focus:ring-blue-200 focus:border-blue-400 px-3 py-2", min: 0, step: 10 %>
-      </div>
-
-      <div id="backfill-options-container"></div>
-
-      <div class="mb-6">
-        <%= f.label :start_at, "RUN SHOULD START AT", class: "block text-gray-500 font-semibold mb-2" %>
-        <%= f.datetime_field :start_at, value: "", class: "block w-full mt-1 rounded border border-gray-200 focus:ring focus:ring-blue-200 focus:border-blue-400 px-3 py-2" %>
-      </div>
-      <%= hidden_field_tag :user_timezone, "", id: "user_timezone" %>
-      <div class="flex justify-center">
-        <%= f.submit "Create Backfill Run", id: "submit-btn", class: "text-white font-bold py-2 px-4 rounded gradient-btn" %>
-      </div>
-    <% end %>
-  </div>
 </div>
+
 <script>
   function initializeBackfillForm() {
     var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     var timeZoneInput = document.getElementById("user_timezone");
-    if (timeZoneInput) { 
-      timeZoneInput.value = timeZone; 
+    if (timeZoneInput) {
+      timeZoneInput.value = timeZone;
     }
 
     var backfillClassSelect = document.getElementById("backfill_run_backfill_class_name");
     var optionsContainer = document.getElementById("backfill-options-container");
-    
+
     if (backfillClassSelect && optionsContainer) {
       backfillClassSelect.removeEventListener("change", handleBackfillClassChange);
       backfillClassSelect.addEventListener("change", handleBackfillClassChange);
@@ -67,17 +153,15 @@
       setTimeout(initializeBackfillForm, 100);
     }
   }
-  
+
   function handleBackfillClassChange() {
     var selectedClass = this.value;
     var optionsContainer = document.getElementById("backfill-options-container");
-    
-    if (!optionsContainer) {
-      return;
-    }
-    
+
+    if (!optionsContainer) return;
+
     optionsContainer.innerHTML = "";
-    
+
     if (selectedClass && selectedClass !== "Select a backfill class") {
       fetch("<%= backfill_options_backfill_runs_path %>?backfill_class_name=" + encodeURIComponent(selectedClass), {
         method: "GET",
@@ -88,15 +172,11 @@
         }
       })
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok: ' + response.status);
-        }
+        if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
         return response.json();
       })
       .then(data => {
-        if (data.html) {
-          optionsContainer.innerHTML = data.html;
-        }
+        if (data.html) optionsContainer.innerHTML = data.html;
       })
       .catch(error => {
         console.error("Error fetching backfill options:", error);
@@ -105,24 +185,19 @@
   }
 
   document.addEventListener("DOMContentLoaded", initializeBackfillForm);
-  
-  if (document.readyState !== "loading") {
-    initializeBackfillForm();
-  }
+  if (document.readyState !== "loading") initializeBackfillForm();
 
   document.addEventListener("DOMContentLoaded", function() {
     var form = document.querySelector('form[action*="backfill_runs"]');
     var submitBtn = document.getElementById("submit-btn");
-    
+
     if (form && submitBtn) {
       form.addEventListener("submit", function() {
         submitBtn.disabled = true;
-        submitBtn.textContent = "Creating...";
-        submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+        submitBtn.textContent = "Creating…";
+        submitBtn.style.opacity = "0.7";
+        submitBtn.style.cursor = "not-allowed";
       });
     }
   });
-  
 </script>
-
-

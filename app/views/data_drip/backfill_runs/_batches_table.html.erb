@@ -1,11 +1,11 @@
 <% batches = local_assigns[:batches] || @batches || backfill_run.batches.order(created_at: :desc).limit(20) %>
 <% batches.each do |batch| %>
-  <tr class="border-b border-gray-100 last:border-b-0">
-    <td class="py-3 px-4 text-gray-700 align-middle"><%= status_tag(batch.status) %></td>
-    <td class="py-3 px-4 text-gray-700 align-middle"><%= batch.batch_size %></td>
-    <td class="py-3 px-4 text-gray-700 align-middle"><%= format_datetime_in_user_timezone(batch.updated_at, @user_timezone) %></td>
-    <td class="py-3 px-4 text-gray-700 align-middle"><%= batch.start_id %></td>
-    <td class="py-3 px-4 text-gray-700 align-middle"><%= batch.finish_id %></td>
-    <td class="py-3 px-4 text-red-700 align-middle"><%= batch.error_message %></td>
+  <tr>
+    <td class="ap-td-first"><%= status_tag(batch.status) %></td>
+    <td style="color:var(--ap-muted)"><%= batch.batch_size %></td>
+    <td style="color:var(--ap-muted)"><%= format_datetime_in_user_timezone(batch.updated_at, @user_timezone) %></td>
+    <td style="color:var(--ap-muted);font-family:monospace;font-size:12.5px;"><%= batch.start_id %></td>
+    <td style="color:var(--ap-muted);font-family:monospace;font-size:12.5px;"><%= batch.finish_id %></td>
+    <td class="ap-td-last" style="color:#dc2626;font-size:12.5px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= batch.error_message %></td>
   </tr>
 <% end %>

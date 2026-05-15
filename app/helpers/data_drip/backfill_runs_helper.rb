@@ -5,27 +5,9 @@ module DataDrip
     include ActionView::Helpers::NumberHelper
 
     def status_tag(status)
-      tag_styles =
-        case status.to_s
-        when "enqueued"
-          "background-color: #cec254; color: #fff; border: 1px solid #eab308;"
-        when "running"
-          "background-color: #e28e26; color: #fff; border: 1px solid #f97316;"
-        when "completed"
-          "background-color: #51bc5f; color: #fff; border: 1px solid #16a34a;"
-        when "failed"
-          "background-color: #ef4444; color: #fff; border: 1px solid #dc2626;"
-        when "stopped"
-          "background-color: #ef4444; color: #fff; border: 1px solid #dc2626;"
-        else
-          "background-color: #9ca3af; color: #fff; border: 1px solid #6b7280;"
-        end
-      content_tag(
-        :span,
-        status.to_s.capitalize,
-        class: "inline-block py-1 rounded text-xs font-semibold",
-        style: "#{tag_styles} padding-right: 5px; padding-left: 5px;"
-      )
+      status_str = status.to_s.downcase
+      badge_class = "ap-badge ap-badge-#{status_str}"
+      content_tag(:span, status_str.capitalize, class: badge_class)
     end
 
     def format_datetime_in_user_timezone(datetime, user_timezone = "UTC")
@@ -67,23 +49,18 @@ module DataDrip
         backfill_run.backfill_class.backfill_options_class.attribute_types
       return "" if attribute_types.empty?
 
-      input_class =
-        "block w-full mt-1 rounded border border-gray-200 focus:ring focus:ring-blue-200 focus:border-blue-400 px-3 py-2"
-
-      content_tag :div, class: "mb-6 p-4 rounded-lg bg-gray-50" do
+      content_tag :div, class: "ap-options-section" do
         header_content =
-          content_tag :h3,
-                      "OPTIONS:",
-                      class: "block text-gray-500 font-semibold mb-2"
+          content_tag :h3, "Options", class: "ap-options-title"
 
         inputs_content =
           attribute_types
             .map do |name, type|
-              content_tag :div, class: "mb-6" do
+              content_tag :div, class: "ap-field" do
                 label_content =
                   label_tag "backfill_run[options][#{name}]",
-                            name.to_s.upcase,
-                            class: "block text-gray-500 font-semibold mb-2"
+                            name.to_s.humanize,
+                            class: "ap-field-label"
 
                 input_content =
                   case type
@@ -91,47 +68,46 @@ module DataDrip
                        ActiveModel::Type::ImmutableString
                     text_field_tag "backfill_run[options][#{name}]",
                                    backfill_run.options[name],
-                                   class: input_class
+                                   class: "ap-field-input"
                   when ActiveModel::Type::Integer, ActiveModel::Type::BigInteger
                     number_field_tag "backfill_run[options][#{name}]",
                                      backfill_run.options[name],
-                                     class: input_class,
+                                     class: "ap-field-input",
                                      step: 1
                   when ActiveModel::Type::Decimal, ActiveModel::Type::Float
                     number_field_tag "backfill_run[options][#{name}]",
                                      backfill_run.options[name],
-                                     class: input_class,
+                                     class: "ap-field-input",
                                      step: 0.01
                   when ActiveModel::Type::Boolean
-                    content_tag :div, class: "flex items-center" do
+                    content_tag :div, style: "display:flex;align-items:center;gap:8px;" do
                       check_box_tag(
                         "backfill_run[options][#{name}]",
                         "1",
-                        backfill_run.options[name],
-                        class: "mr-2"
+                        backfill_run.options[name]
                       ) +
                         label_tag(
                           "backfill_run[options][#{name}]",
                           "Yes",
-                          class: "text-gray-700"
+                          style: "font-size:13.5px;color:#374151;"
                         )
                     end
                   when ActiveModel::Type::Date
                     date_field_tag "backfill_run[options][#{name}]",
                                    backfill_run.options[name],
-                                   class: input_class
+                                   class: "ap-field-input"
                   when ActiveModel::Type::Time
                     time_field_tag "backfill_run[options][#{name}]",
                                    backfill_run.options[name],
-                                   class: input_class
+                                   class: "ap-field-input"
                   when ActiveModel::Type::DateTime
                     datetime_field_tag "backfill_run[options][#{name}]",
                                        backfill_run.options[name],
-                                       class: input_class
+                                       class: "ap-field-input"
                   else
                     text_area_tag "backfill_run[options][#{name}]",
                                   backfill_run.options[name],
-                                  class: input_class,
+                                  class: "ap-field-input",
                                   rows: 3
                   end
 
