@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+if gem help | grep -q foreman; then
+  exec foreman start -f Procfile.dev "$@"
+else
+  echo "Installing foreman..."
+  gem install foreman
+  exec foreman start -f Procfile.dev "$@"
+fi

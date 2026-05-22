@@ -1,60 +1,73 @@
+const POLL_INTERVAL_MS = 500
+
 class BackfillRunUpdates {
   constructor(element) {
     this.element = element
     this.backfillRunId = element.dataset.backfillRunId
-    this.pollingInterval = null
+    this.pollTimeout = null
+    this.abortController = null
+    this.stopped = false
 
     this.statusElement = element.querySelector('[data-target="status"]')
-    this.processedCountElement = element.querySelector('[data-target="processedCount"]')
-    this.totalCountElement = element.querySelector('[data-target="totalCount"]')
+    this.processedCountElements = element.querySelectorAll('[data-target="processedCount"]')
+    this.totalCountElements = element.querySelectorAll('[data-target="totalCount"]')
     this.batchesTableElement = element.querySelector('[data-target="batchesTable"]')
     this.progressBarElement = element.querySelector('[data-target="progressBar"]')
     this.runDurationElement = element.querySelector('[data-target="runDuration"]')
     this.averageBatchDurationElement = element.querySelector('[data-target="averageBatchDuration"]')
     this.elementsPerSecondElement = element.querySelector('[data-target="elementsPerSecond"]')
     this.actionButtonElement = element.querySelector('[data-target="actionButton"]')
+    this.progressBarTrackElement = element.querySelector('[data-target="progressBarTrack"]')
 
-    this.startPolling()
+    this.poll()
   }
 
   disconnect() {
-    this.stopPolling()
-  }
-
-  startPolling() {
-    // Poll immediately
-    this.poll()
-
-    // Then poll every 500ms
-    this.pollingInterval = setInterval(() => {
-      this.poll()
-    }, 500)
-  }
-
-  stopPolling() {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval)
-      this.pollingInterval = null
+    this.stopped = true
+    if (this.pollTimeout) {
+      clearTimeout(this.pollTimeout)
+      this.pollTimeout = null
+    }
+    if (this.abortController) {
+      this.abortController.abort()
+      this.abortController = null
     }
   }
 
+  scheduleNext() {
+    if (this.stopped) return
+    this.pollTimeout = setTimeout(() => this.poll(), POLL_INTERVAL_MS)
+  }
+
   async poll() {
+    if (this.stopped) return
+
+    this.abortController = new AbortController()
     try {
-      const response = await fetch(`/data_drip/backfill_runs/${this.backfillRunId}/updates`)
+      const response = await fetch(
+        `/data_drip/backfill_runs/${this.backfillRunId}/updates`,
+        { signal: this.abortController.signal }
+      )
       if (!response.ok) {
+        this.scheduleNext()
         return
       }
 
       const data = await response.json()
+      if (this.stopped) return
       this.updateUI(data)
 
-      // Stop polling if backfill is done
       if (data.status === 'completed' || data.status === 'failed' || data.status === 'stopped') {
-        this.stopPolling()
+        this.stopped = true
+        return
       }
     } catch (error) {
-      // Silently fail
+      if (error.name === 'AbortError') return
+    } finally {
+      this.abortController = null
     }
+
+    this.scheduleNext()
   }
 
   updateUI(data) {
@@ -62,27 +75,29 @@ class BackfillRunUpdates {
       this.statusElement.innerHTML = data.status_html
     }
 
-    if (this.processedCountElement) {
-      this.processedCountElement.textContent = data.processed_count
-    }
-
-    if (this.totalCountElement) {
-      this.totalCountElement.textContent = data.total_count
-    }
+    this.processedCountElements.forEach(el => { el.textContent = data.processed_count })
+    this.totalCountElements.forEach(el => { el.textContent = data.total_count })
 
     if (this.batchesTableElement) {
       this.batchesTableElement.innerHTML = data.batches_html
     }
 
     // Update progress bar
-    if (this.progressBarElement) {
-      const processedCount = parseInt(data.processed_count) || 0
-      const totalCount = parseInt(data.total_count) || 0
+    const processedCount = parseInt(data.processed_count) || 0
+    const totalCount = parseInt(data.total_count) || 0
+    const pct = totalCount > 0 ? (processedCount * 100 / totalCount) : 0
 
-      this.progressBarElement.setAttribute('value', processedCount)
-      this.progressBarElement.setAttribute('max', totalCount)
-      this.progressBarElement.value = processedCount
-      this.progressBarElement.max = totalCount
+    if (this.progressBarElement) {
+      if (this.progressBarElement.tagName === 'PROGRESS') {
+        this.progressBarElement.value = processedCount
+        this.progressBarElement.max = totalCount
+      } else {
+        this.progressBarElement.textContent = pct.toFixed(1) + '%'
+      }
+    }
+
+    if (this.progressBarTrackElement) {
+      this.progressBarTrackElement.style.width = pct.toFixed(1) + '%'
     }
 
     // Update insights

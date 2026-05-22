@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount MissionControl::Jobs::Engine, at: "/jobs" if defined?(MissionControl::Jobs::Engine)
   mount DataDrip::Engine => "/data_drip"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
