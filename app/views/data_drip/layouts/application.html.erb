@@ -16,35 +16,62 @@
   <%# Prevent flash of wrong theme — applied before any paint %>
   <script>
     (function() {
-      if (localStorage.getItem('dd-dark') === 'true') {
-        document.documentElement.classList.add('dark');
+      var pref = localStorage.getItem('dd-theme');
+      if (pref !== 'light' && pref !== 'dark' && pref !== 'auto') {
+        var legacy = localStorage.getItem('dd-dark');
+        if (legacy === 'true') pref = 'dark';
+        else if (legacy === 'false') pref = 'light';
+        else pref = 'auto';
       }
+      var isDark = pref === 'dark' || (pref === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) document.documentElement.classList.add('dark');
     })();
   </script>
 </head>
 <body>
   <%= yield %>
   <script>
-    function ddApplyDark(isDark) {
-      var html = document.documentElement;
-      var track = document.getElementById('ap-toggle-track');
-      if (isDark) {
-        html.classList.add('dark');
-        if (track) track.classList.add('ap-toggle-on');
-      } else {
-        html.classList.remove('dark');
-        if (track) track.classList.remove('ap-toggle-on');
+    function ddGetThemePref() {
+      var pref = localStorage.getItem('dd-theme');
+      if (pref === 'light' || pref === 'dark' || pref === 'auto') return pref;
+      var legacy = localStorage.getItem('dd-dark');
+      if (legacy === 'true') return 'dark';
+      if (legacy === 'false') return 'light';
+      return 'auto';
+    }
+
+    function ddSystemPrefersDark() {
+      return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+
+    function ddApplyTheme(pref) {
+      var isDark = pref === 'dark' || (pref === 'auto' && ddSystemPrefersDark());
+      document.documentElement.classList.toggle('dark', isDark);
+      var opts = document.querySelectorAll('.ap-theme-opt');
+      for (var i = 0; i < opts.length; i++) {
+        var active = opts[i].getAttribute('data-theme') === pref;
+        opts[i].classList.toggle('ap-theme-opt-active', active);
+        opts[i].setAttribute('aria-checked', active ? 'true' : 'false');
       }
-      try { localStorage.setItem('dd-dark', isDark ? 'true' : 'false'); } catch(e) {}
+      try { localStorage.setItem('dd-theme', pref); } catch(e) {}
     }
 
     function ddSetupToggle() {
-      var btn = document.getElementById('dark-toggle');
-      if (!btn || btn._ddBound) return;
-      btn._ddBound = true;
-      ddApplyDark(document.documentElement.classList.contains('dark'));
-      btn.addEventListener('click', function() {
-        ddApplyDark(!document.documentElement.classList.contains('dark'));
+      var opts = document.querySelectorAll('.ap-theme-opt');
+      if (!opts.length) return;
+      ddApplyTheme(ddGetThemePref());
+      for (var i = 0; i < opts.length; i++) {
+        if (opts[i]._ddBound) continue;
+        opts[i]._ddBound = true;
+        opts[i].addEventListener('click', function(e) {
+          ddApplyTheme(e.currentTarget.getAttribute('data-theme'));
+        });
+      }
+    }
+
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+        if (ddGetThemePref() === 'auto') ddApplyTheme('auto');
       });
     }
 

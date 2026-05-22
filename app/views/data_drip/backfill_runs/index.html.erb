@@ -21,17 +21,26 @@
     <% end %>
 
     <div class="ap-dark-toggle-area">
-      <span class="ap-toggle-label">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-        Dark mode
-      </span>
-      <button class="ap-toggle-btn" id="dark-toggle" role="switch" aria-label="Toggle dark mode">
-        <div class="ap-toggle-track" id="ap-toggle-track">
-          <div class="ap-toggle-thumb"></div>
-        </div>
-      </button>
+      <span class="ap-toggle-label">Theme</span>
+      <div class="ap-theme-switch" role="radiogroup" aria-label="Theme">
+        <button type="button" class="ap-theme-opt" data-theme="light" role="radio" aria-label="Light" title="Light">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+        </button>
+        <button type="button" class="ap-theme-opt" data-theme="auto" role="radio" aria-label="Auto (follow system)" title="Auto (follow system)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="14" rx="2"/>
+            <path d="M8 22h8M12 18v4"/>
+          </svg>
+        </button>
+        <button type="button" class="ap-theme-opt" data-theme="dark" role="radio" aria-label="Dark" title="Dark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <nav class="ap-nav">

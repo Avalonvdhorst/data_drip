@@ -16,6 +16,9 @@ gem "sqlite3"
 
 gem "puma"
 
+gem "solid_queue"
+gem "mission_control-jobs"
+
 gem "rspec", "~> 3.0"
 
 gem "rspec-rails", ">= 8.0"
