@@ -120,7 +120,20 @@ module DataDrip
                      backfill_run: @backfill_run
                    },
                    formats: [ :html ]
-                 )
+                 ),
+               action_button_html:
+                 render_to_string(
+                   partial: "action_button",
+                   locals: {
+                     backfill_run: @backfill_run
+                   },
+                   formats: [ :html ]
+                 ),
+               insights: {
+                 run_duration: helpers.format_insight_duration(@backfill_run.insight_run_duration_seconds),
+                 average_batch_duration: helpers.format_insight_duration(@backfill_run.insight_average_batch_duration_seconds),
+                 elements_per_second: helpers.format_insight_elements_per_second(@backfill_run.insight_elements_per_second)
+               }
              }
     end
 
